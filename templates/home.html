@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EverHaven - Amazon Profit Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #1a1a2e;
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            margin-top: 8px;
+            font-size: 16px;
+            opacity: 0.85;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .welcome {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .welcome h2 {
+            font-size: 24px;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #1a1a2e;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .card.add { border-top: 4px solid #4CAF50; }
+        .card.products { border-top: 4px solid #2196F3; }
+        .card.sale { border-top: 4px solid #FF9800; }
+        .card.history { border-top: 4px solid #9C27B0; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>EverHaven</h1>
+        <p>Amazon Profit Tracker</p>
+    </div>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Welcome back</h2>
+            <p>Manage your Amazon products, stock and profits</p>
+        </div>
+
+        <div class="cards">
+            <a href="/add-product" class="card add">
+                <h3>+ Add Product</h3>
+                <p>Add new products and stock</p>
+            </a>
+
+            <a href="/products" class="card products">
+                <h3>View Products</h3>
+                <p>See all products & stock levels</p>
+            </a>
+
+            <a href="/record-sale" class="card sale">
+                <h3>Record Sale</h3>
+                <p>Log a new Amazon sale</p>
+            </a>
+
+            <a href="/sales" class="card history">
+                <h3>Sales History</h3>
+                <p>View all past sales & profits</p>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

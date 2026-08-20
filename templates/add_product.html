@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Product - EverHaven</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .header {
+            background-color: #1a1a2e;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; }
+        .container {
+            max-width: 550px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-bottom: 25px;
+            color: #1a1a2e;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background-color: #45a049; }
+        .links {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .links a {
+            margin: 0 12px;
+            color: #1a1a2e;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>EverHaven</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>Add New Product</h2>
+
+            <form method="POST" action="/add-product">
+                <label>Product Name</label>
+                <input type="text" name="product_name" required>
+
+                <label>Current Stock</label>
+                <input type="number" name="current_stock" value="0" required>
+
+                <label>Cost Price (£)</label>
+                <input type="number" step="0.01" name="cost_price" required>
+
+                <label>Notes (optional)</label>
+                <textarea name="notes" rows="3"></textarea>
+
+                <button type="submit">Add Product</button>
+            </form>
+        </div>
+
+        <div class="links">
+            <a href="/">Home</a>
+            <a href="/products">View Products</a>
+            <a href="/sales">Sales History</a>
+        </div>
+    </div>
+
+</body>
+</html>

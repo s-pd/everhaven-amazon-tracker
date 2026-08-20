@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales History - EverHaven</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .header {
+            background-color: #1a1a2e;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; }
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .top-bar h2 { color: #1a1a2e; }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #1a1a2e;
+            color: white;
+        }
+        tr:hover { background-color: #f8f9fa; }
+        .profit {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .links {
+            margin-top: 25px;
+        }
+        .links a {
+            margin-right: 20px;
+            color: #1a1a2e;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>EverHaven</h1>
+    </div>
+
+    <div class="container">
+        <div class="top-bar">
+            <h2>Sales History</h2>
+            <a href="/record-sale" class="btn">+ Record Sale</a>
+        </div>
+<div style="background: white; padding: 18px 25px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: inline-block;">
+    <strong>Total Net Profit:</strong> 
+    <span style="color: #2e7d32; font-size: 22px; font-weight: bold;">
+        £{{ "%.2f"|format(total_profit) }}
+    </span>
+</div>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Sale Price</th>
+                <th>Fees</th>
+                <th>Net Profit</th>
+                <th>Date</th>
+                <th>Notes</th>
+            </tr>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.product_name }}</td>
+                <td>{{ sale.quantity_sold }}</td>
+                <td>£{{ "%.2f"|format(sale.sale_price) }}</td>
+                <td>£{{ "%.2f"|format(sale.amazon_fees) }}</td>
+                <td class="profit">£{{ "%.2f"|format(sale.net_profit) }}</td>
+                <td>{{ sale.sale_date }}</td>
+                <td>{{ sale.notes or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align:center;">No sales recorded yet</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="links">
+            <a href="/">← Home</a>
+            <a href="/products">Products</a>
+            <a href="/record-sale">Record Sale</a>
+        </div>
+    </div>
+
+</body>
+</html>
