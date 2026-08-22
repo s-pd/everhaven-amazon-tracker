@@ -97,6 +97,7 @@
                 <th>Net Profit</th>
                 <th>Date</th>
                 <th>Notes</th>
+                <th>Action</th>
             </tr>
             {% for sale in sales %}
             <tr>
@@ -108,10 +109,17 @@
                 <td class="profit">£{{ "%.2f"|format(sale.net_profit) }}</td>
                 <td>{{ sale.sale_date }}</td>
                 <td>{{ sale.notes or '-' }}</td>
+                <td>
+                     <a href="/delete-sale/{{ sale.id }}" 
+                     style="color: #e53935; text-decoration: none; font-                       weight: bold;"
+                     onclick="return confirm('Are you sure you want to delete this sale?')">
+       Delete
+    </a>
+</td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="8" style="text-align:center;">No sales recorded yet</td>
+                <td colspan="9" style="text-align:center;">No sales recorded yet</td>
             </tr>
             {% endfor %}
         </table>

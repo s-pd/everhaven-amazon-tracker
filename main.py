@@ -234,3 +234,11 @@ def edit_product(
     conn.close()
 
     return RedirectResponse(url="/products", status_code=303)
+
+@app.get("/delete-sale/{sale_id}")
+def delete_sale(sale_id: int):
+    conn = get_db_connection()
+    conn.execute("DELETE FROM sales WHERE id = ?", (sale_id,))
+    conn.commit()
+    conn.close()
+    return RedirectResponse(url="/sales", status_code=303)
