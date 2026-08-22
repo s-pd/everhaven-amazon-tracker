@@ -60,6 +60,13 @@ def home(request: Request):
         name="home.html"
     )
 
+@app.get("/add-product")
+def add_product_form(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="add_product.html"
+    )
+
 @app.post("/add-product")
 def add_product(
     request: Request,
@@ -83,25 +90,6 @@ def add_product(
 
     return RedirectResponse(url="/products", status_code=303)
 
-@app.post("/add-product")
-def add_product(
-    request: Request,
-    product_name: str = Form(...),
-    current_stock: int = Form(...),
-    cost_price: float = Form(...),
-    notes: str = Form("")
-):
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    conn = get_db_connection()
-    conn.execute(
-        "INSERT INTO products (product_name, current_stock, cost_price, notes, created_at) VALUES (?, ?, ?, ?, ?)",
-        (product_name, current_stock, cost_price, notes, created_at)
-    )
-    conn.commit()
-    conn.close()
-
-    return RedirectResponse(url="/add-product", status_code=303)
 
 @app.get("/products")
 def view_products(request: Request):
