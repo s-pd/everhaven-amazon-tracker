@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Product - EverHaven</title>
+    <title>Edit Product - EverHaven</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -49,7 +49,7 @@
         button {
             width: 100%;
             padding: 14px;
-            background-color: #4CAF50;
+            background-color: #2196F3;
             color: white;
             border: none;
             border-radius: 6px;
@@ -57,7 +57,7 @@
             font-weight: bold;
             cursor: pointer;
         }
-        button:hover { background-color: #45a049; }
+        button:hover { background-color: #1976D2; }
         .links {
             text-align: center;
             margin-top: 25px;
@@ -67,12 +67,6 @@
             color: #1a1a2e;
             text-decoration: none;
             font-weight: 600;
-        }
-        .hint {
-            font-size: 13px;
-            color: #777;
-            margin-top: -12px;
-            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -84,35 +78,31 @@
 
     <div class="container">
         <div class="card">
-            <h2>Add New Product</h2>
+            <h2>Edit Product</h2>
 
-            <form method="POST" action="/add-product">
+            <form method="POST" action="/edit-product/{{ product.id }}">
                 <label>Product Name</label>
-                <input type="text" name="product_name" placeholder="e.g. Scooby Doo Chocolate (Pack of 2)" required>
+                <input type="text" name="product_name" value="{{ product.product_name }}" required>
 
-                <label>Number of Packs (Stock)</label>
-                <input type="number" name="current_stock" value="1" min="0" required>
-                <div class="hint">How many packs you are adding</div>
+                <label>Current Stock (Packs)</label>
+                <input type="number" name="current_stock" value="{{ product.current_stock }}" required>
 
                 <label>Units per Pack</label>
-                <input type="number" name="units_per_pack" value="1" min="1" required>
-                <div class="hint">e.g. 2 if one pack contains 2 chocolates</div>
+                <input type="number" name="units_per_pack" value="{{ product.units_per_pack or 1 }}" min="1" required>
 
                 <label>Cost per Pack (£)</label>
-                <input type="number" step="0.01" name="cost_price" required>
-                <div class="hint">How much you paid for one pack</div>
+                <input type="number" step="0.01" name="cost_price" value="{{ product.cost_price }}" required>
 
-                <label>Notes (optional)</label>
-                <textarea name="notes" rows="3"></textarea>
+                <label>Notes</label>
+                <textarea name="notes" rows="3">{{ product.notes or '' }}</textarea>
 
-                <button type="submit">Add Product</button>
+                <button type="submit">Update Product</button>
             </form>
         </div>
 
         <div class="links">
+            <a href="/products">← Back to Products</a>
             <a href="/">Home</a>
-            <a href="/products">View Products</a>
-            <a href="/sales">Sales History</a>
         </div>
     </div>
 

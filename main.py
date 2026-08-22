@@ -14,16 +14,26 @@ def get_db_connection():
 
 def init_db():
     conn = get_db_connection()
+    
+    # Create products table if not exists
     conn.execute('''
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             product_name TEXT NOT NULL,
             current_stock INTEGER DEFAULT 0,
             cost_price REAL DEFAULT 0,
+            units_per_pack INTEGER DEFAULT 1,
             notes TEXT,
             created_at TEXT
         )
     ''')
+
+    # Add the new column if it doesn't exist (for existing databases)
+    try:
+        conn.execute("ALTER TABLE products ADD COLUMN units_per_pack INTEGER DEFAULT 1")
+    except:
+        pass  # Column already exists
+
     conn.execute('''
         CREATE TABLE IF NOT EXISTS sales (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,12 +60,28 @@ def home(request: Request):
         name="home.html"
     )
 
-@app.get("/add-product")
-def add_product_form(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="add_product.html"
+@app.post("/add-product")
+def add_product(
+    request: Request,
+    product_name: str = Form(...),
+    current_stock: int = Form(...),
+    cost_price: float = Form(...),
+    units_per_pack: int = Form(1),
+    notes: str = Form("")
+):
+    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    conn = get_db_connection()
+    conn.execute(
+        '''INSERT INTO products 
+           (product_name, current_stock, cost_price, units_per_pack, notes, created_at) 
+           VALUES (?, ?, ?, ?, ?, ?)''',
+        (product_name, current_stock, cost_price, units_per_pack, notes, created_at)
     )
+    conn.commit()
+    conn.close()
+
+    return RedirectResponse(url="/products", status_code=303)
 
 @app.post("/add-product")
 def add_product(
@@ -184,4 +210,39 @@ def delete_product(product_id: int):
     conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
     conn.commit()
     conn.close()
+    return RedirectResponse(url="/products", status_code=303)
+
+@app.get("/edit-product/{product_id}")
+def edit_product_form(request: Request, product_id: int):
+    conn = get_db_connection()
+    product = conn.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    conn.close()
+
+    if product is None:
+        return RedirectResponse(url="/products", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="edit_product.html",
+        context={"product": product}
+    )
+
+@app.post("/edit-product/{product_id}")
+def edit_product(
+    product_id: int,
+    product_name: str = Form(...),
+    current_stock: int = Form(...),
+    cost_price: float = Form(...),
+    units_per_pack: int = Form(1),
+    notes: str = Form("")
+):
+    conn = get_db_connection()
+    conn.execute('''
+        UPDATE products 
+        SET product_name = ?, current_stock = ?, cost_price = ?, units_per_pack = ?, notes = ?
+        WHERE id = ?
+    ''', (product_name, current_stock, cost_price, units_per_pack, notes, product_id))
+    conn.commit()
+    conn.close()
+
     return RedirectResponse(url="/products", status_code=303)
