@@ -1,24 +1,27 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from datetime import datetime
+import os
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 def get_db_connection():
-    conn = sqlite3.connect("amazon.db")
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
 def init_db():
     conn = get_db_connection()
-    
-    # Create products table if not exists
-    conn.execute('''
+    cur = conn.cursor()
+
+    cur.execute('''
         CREATE TABLE IF NOT EXISTS products (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             product_name TEXT NOT NULL,
             current_stock INTEGER DEFAULT 0,
             cost_price REAL DEFAULT 0,
@@ -28,27 +31,22 @@ def init_db():
         )
     ''')
 
-    # Add the new column if it doesn't exist (for existing databases)
-    try:
-        conn.execute("ALTER TABLE products ADD COLUMN units_per_pack INTEGER DEFAULT 1")
-    except:
-        pass  # Column already exists
-
-    conn.execute('''
+    cur.execute('''
         CREATE TABLE IF NOT EXISTS sales (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            product_id INTEGER,
+            id SERIAL PRIMARY KEY,
+            product_id INTEGER REFERENCES products(id),
             quantity_sold INTEGER,
             sale_price REAL,
             amazon_fees REAL DEFAULT 0,
             net_profit REAL,
             sale_date TEXT,
             notes TEXT,
-            created_at TEXT,
-            FOREIGN KEY (product_id) REFERENCES products (id)
+            created_at TEXT
         )
     ''')
+
     conn.commit()
+    cur.close()
     conn.close()
 
 init_db()
