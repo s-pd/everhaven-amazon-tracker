@@ -77,22 +77,26 @@ def add_product(
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     conn = get_db_connection()
-    conn.execute(
+    cur = conn.cursor()
+    cur.execute(
         '''INSERT INTO products 
            (product_name, current_stock, cost_price, units_per_pack, notes, created_at) 
-           VALUES (?, ?, ?, ?, ?, ?)''',
+           VALUES (%s, %s, %s, %s, %s, %s)''',
         (product_name, current_stock, cost_price, units_per_pack, notes, created_at)
     )
     conn.commit()
+    cur.close()
     conn.close()
 
     return RedirectResponse(url="/products", status_code=303)
 
-
 @app.get("/products")
 def view_products(request: Request):
     conn = get_db_connection()
-    products = conn.execute("SELECT * FROM products ORDER BY id DESC").fetchall()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products ORDER BY id DESC")
+    products = cur.fetchall()
+    cur.close()
     conn.close()
     
     return templates.TemplateResponse(
@@ -104,7 +108,10 @@ def view_products(request: Request):
 @app.get("/record-sale")
 def record_sale_form(request: Request):
     conn = get_db_connection()
-    products = conn.execute("SELECT id, product_name, current_stock FROM products ORDER BY product_name").fetchall()
+    cur = conn.cursor()
+    cur.execute("SELECT id, product_name, current_stock FROM products ORDER BY product_name")
+    products = cur.fetchall()
+    cur.close()
     conn.close()
     
     return templates.TemplateResponse(
@@ -123,35 +130,36 @@ def record_sale(
     notes: str = Form("")
 ):
     conn = get_db_connection()
+    cur = conn.cursor()
     
-    # Get current product info
-    product = conn.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+    product = cur.fetchone()
     
     if product is None:
+        cur.close()
         conn.close()
         return {"error": "Product not found"}
     
     if quantity_sold > product["current_stock"]:
+        cur.close()
         conn.close()
         return {"error": "Not enough stock"}
     
-    # Calculate net profit
     net_profit = (sale_price * quantity_sold) - (product["cost_price"] * quantity_sold) - amazon_fees
     
-    # Reduce stock
     new_stock = product["current_stock"] - quantity_sold
-    conn.execute("UPDATE products SET current_stock = ? WHERE id = ?", (new_stock, product_id))
+    cur.execute("UPDATE products SET current_stock = %s WHERE id = %s", (new_stock, product_id))
     
-    # Save the sale
     sale_date = datetime.now().strftime("%Y-%m-%d")
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    conn.execute('''
+    cur.execute('''
         INSERT INTO sales (product_id, quantity_sold, sale_price, amazon_fees, net_profit, sale_date, notes, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     ''', (product_id, quantity_sold, sale_price, amazon_fees, net_profit, sale_date, notes, created_at))
     
     conn.commit()
+    cur.close()
     conn.close()
     
     return RedirectResponse(url="/products", status_code=303)
@@ -159,8 +167,9 @@ def record_sale(
 @app.get("/sales")
 def sales_history(request: Request):
     conn = get_db_connection()
+    cur = conn.cursor()
     
-    sales = conn.execute('''
+    cur.execute('''
         SELECT 
             sales.id,
             products.product_name,
@@ -173,13 +182,14 @@ def sales_history(request: Request):
         FROM sales
         JOIN products ON sales.product_id = products.id
         ORDER BY sales.id DESC
-    ''').fetchall()
+    ''')
+    sales = cur.fetchall()
 
-    # Calculate total profit
-    total_profit = conn.execute("SELECT SUM(net_profit) FROM sales").fetchone()[0]
-    if total_profit is None:
-        total_profit = 0
+    cur.execute("SELECT SUM(net_profit) as total FROM sales")
+    total = cur.fetchone()
+    total_profit = total["total"] if total and total["total"] is not None else 0
 
+    cur.close()
     conn.close()
     
     return templates.TemplateResponse(
@@ -190,18 +200,24 @@ def sales_history(request: Request):
             "total_profit": total_profit
         }
     )
+
 @app.get("/delete-product/{product_id}")
 def delete_product(product_id: int):
     conn = get_db_connection()
-    conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
+    cur = conn.cursor()
+    cur.execute("DELETE FROM products WHERE id = %s", (product_id,))
     conn.commit()
+    cur.close()
     conn.close()
     return RedirectResponse(url="/products", status_code=303)
 
 @app.get("/edit-product/{product_id}")
 def edit_product_form(request: Request, product_id: int):
     conn = get_db_connection()
-    product = conn.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
+    product = cur.fetchone()
+    cur.close()
     conn.close()
 
     if product is None:
@@ -223,12 +239,14 @@ def edit_product(
     notes: str = Form("")
 ):
     conn = get_db_connection()
-    conn.execute('''
+    cur = conn.cursor()
+    cur.execute('''
         UPDATE products 
-        SET product_name = ?, current_stock = ?, cost_price = ?, units_per_pack = ?, notes = ?
-        WHERE id = ?
+        SET product_name = %s, current_stock = %s, cost_price = %s, units_per_pack = %s, notes = %s
+        WHERE id = %s
     ''', (product_name, current_stock, cost_price, units_per_pack, notes, product_id))
     conn.commit()
+    cur.close()
     conn.close()
 
     return RedirectResponse(url="/products", status_code=303)
@@ -236,7 +254,9 @@ def edit_product(
 @app.get("/delete-sale/{sale_id}")
 def delete_sale(sale_id: int):
     conn = get_db_connection()
-    conn.execute("DELETE FROM sales WHERE id = ?", (sale_id,))
+    cur = conn.cursor()
+    cur.execute("DELETE FROM sales WHERE id = %s", (sale_id,))
     conn.commit()
+    cur.close()
     conn.close()
     return RedirectResponse(url="/sales", status_code=303)
