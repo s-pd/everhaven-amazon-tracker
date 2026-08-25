@@ -20,7 +20,7 @@
             color: white;
             padding: 25px 0;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         .header h1 {
@@ -33,6 +33,20 @@
             margin-top: 8px;
             font-size: 16px;
             opacity: 0.85;
+        }
+
+        .logout {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .logout:hover {
+            color: #ff8787;
         }
 
         .container {
@@ -95,6 +109,7 @@
 <body>
 
     <div class="header">
+        <a href="/logout" class="logout">Logout</a>
         <h1>EverHaven</h1>
         <p>Amazon Profit Tracker</p>
     </div>
