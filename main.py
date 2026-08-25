@@ -1,15 +1,30 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Depends, status
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from starlette.middleware.sessions import SessionMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import os
+import secrets
 
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key="everhaven-secret-key-change-this-later")
+
 templates = Jinja2Templates(directory="templates")
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+
+# Simple login credentials (we can improve later)
+USERNAME = "admin"
+PASSWORD = "everhaven123"   # Change this to a strong password later
+
+def get_current_user(request: Request):
+    user = request.session.get("user")
+    if not user:
+        return None
+    return user
 
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -53,6 +68,10 @@ init_db()
 
 @app.get("/")
 def home(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    
     return templates.TemplateResponse(
         request=request,
         name="home.html"
@@ -60,6 +79,10 @@ def home(request: Request):
 
 @app.get("/add-product")
 def add_product_form(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    
     return templates.TemplateResponse(
         request=request,
         name="add_product.html"
@@ -74,6 +97,10 @@ def add_product(
     units_per_pack: int = Form(1),
     notes: str = Form("")
 ):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     conn = get_db_connection()
@@ -92,6 +119,10 @@ def add_product(
 
 @app.get("/products")
 def view_products(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM products ORDER BY id DESC")
@@ -107,6 +138,10 @@ def view_products(request: Request):
 
 @app.get("/record-sale")
 def record_sale_form(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, product_name, current_stock FROM products ORDER BY product_name")
@@ -129,6 +164,10 @@ def record_sale(
     amazon_fees: float = Form(0),
     notes: str = Form("")
 ):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     
@@ -166,6 +205,10 @@ def record_sale(
 
 @app.get("/sales")
 def sales_history(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     
@@ -202,7 +245,11 @@ def sales_history(request: Request):
     )
 
 @app.get("/delete-product/{product_id}")
-def delete_product(product_id: int):
+def delete_product(request: Request, product_id: int):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM products WHERE id = %s", (product_id,))
@@ -213,6 +260,10 @@ def delete_product(product_id: int):
 
 @app.get("/edit-product/{product_id}")
 def edit_product_form(request: Request, product_id: int):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
@@ -231,6 +282,7 @@ def edit_product_form(request: Request, product_id: int):
 
 @app.post("/edit-product/{product_id}")
 def edit_product(
+    request: Request,
     product_id: int,
     product_name: str = Form(...),
     current_stock: int = Form(...),
@@ -238,6 +290,10 @@ def edit_product(
     units_per_pack: int = Form(1),
     notes: str = Form("")
 ):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('''
@@ -252,7 +308,11 @@ def edit_product(
     return RedirectResponse(url="/products", status_code=303)
 
 @app.get("/delete-sale/{sale_id}")
-def delete_sale(sale_id: int):
+def delete_sale(request: Request, sale_id: int):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM sales WHERE id = %s", (sale_id,))
@@ -260,3 +320,22 @@ def delete_sale(sale_id: int):
     cur.close()
     conn.close()
     return RedirectResponse(url="/sales", status_code=303)
+
+@app.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login")
+def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    if username == USERNAME and password == PASSWORD:
+        request.session["user"] = username
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse(
+        "login.html",
+        {"request": request, "error": "Invalid username or password"}
+    )
+
+@app.get("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=303)
