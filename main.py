@@ -323,16 +323,21 @@ def delete_sale(request: Request, sale_id: int):
 
 @app.get("/login")
 def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html"
+    )
 
 @app.post("/login")
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
     if username == USERNAME and password == PASSWORD:
         request.session["user"] = username
         return RedirectResponse(url="/", status_code=303)
+    
     return templates.TemplateResponse(
-        "login.html",
-        {"request": request, "error": "Invalid username or password"}
+        request=request,
+        name="login.html",
+        context={"error": "Invalid username or password"}
     )
 
 @app.get("/logout")
