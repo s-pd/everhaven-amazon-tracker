@@ -3,18 +3,12 @@
 <head>
     <title>EverHaven - Amazon Profit Tracker</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background-color: #f0f2f5;
             color: #333;
         }
-
         .header {
             background-color: #1a1a2e;
             color: white;
@@ -22,19 +16,8 @@
             text-align: center;
             position: relative;
         }
-
-        .header h1 {
-            font-size: 36px;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
-        .header p {
-            margin-top: 8px;
-            font-size: 16px;
-            opacity: 0.85;
-        }
-
+        .header h1 { font-size: 36px; }
+        .header p { margin-top: 8px; opacity: 0.85; }
         .logout {
             position: absolute;
             top: 20px;
@@ -42,82 +25,46 @@
             color: #ff6b6b;
             text-decoration: none;
             font-weight: 600;
-            font-size: 15px;
         }
-
-        .logout:hover {
-            color: #ff8787;
-        }
-
         .container {
             max-width: 900px;
             margin: 50px auto;
             padding: 0 20px;
         }
-
         .welcome {
             text-align: center;
             margin-bottom: 40px;
         }
-
-        .welcome h2 {
-            font-size: 24px;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-        }
-
-<a href="/amazon-subscription" class="card history">
-                <h3>Amazon Subscription</h3>
-                <p>Monthly Amazon charges</p>
-            </a>
-
-            <a href="/change-password" class="card products">
-                <h3>Change Password</h3>
-                <p>Update your login password</p>
-            </a>       
-
+        .welcome h2 { color: #1a1a2e; margin-bottom: 10px; }
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 25px;
         }
-
         .card {
             background: white;
             border-radius: 12px;
             padding: 30px 20px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
             text-decoration: none;
             color: inherit;
         }
-
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
-
-        .card h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-            color: #1a1a2e;
-        }
-
-        .card p {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .card.add { border-top: 4px solid #4CAF50; }
-        .card.products { border-top: 4px solid #2196F3; }
-        .card.sale { border-top: 4px solid #FF9800; }
-        .card.history { border-top: 4px solid #9C27B0; }
-
+        .card h3 { margin-bottom: 10px; color: #1a1a2e; }
+        .card p { font-size: 14px; color: #666; }
+        .add { border-top: 4px solid #4CAF50; }
+        .products { border-top: 4px solid #2196F3; }
+        .sale { border-top: 4px solid #FF9800; }
+        .history { border-top: 4px solid #9C27B0; }
+        .sub { border-top: 4px solid #e53935; }
+        .pass { border-top: 4px solid #607d8b; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <a href="/logout" class="logout">Logout</a>
         <h1>EverHaven</h1>
@@ -150,8 +97,17 @@
                 <h3>Sales History</h3>
                 <p>View all past sales & profits</p>
             </a>
+
+            <a href="/amazon-subscription" class="card sub">
+                <h3>Amazon Subscription</h3>
+                <p>Monthly Amazon charges</p>
+            </a>
+
+            <a href="/change-password" class="card pass">
+                <h3>Change Password</h3>
+                <p>Update your login password</p>
+            </a>
         </div>
     </div>
-
 </body>
 </html>
