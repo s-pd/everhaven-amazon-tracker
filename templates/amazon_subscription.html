@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amazon Subscription - EverHaven</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; color:#333; }
+        .header { background-color: #1a1a2e; color: white; padding: 20px 0; text-align: center; }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 25px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; }
+        button { padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #1a1a2e; color: white; }
+        .links { margin-top: 25px; }
+        .links a { margin-right: 20px; color: #1a1a2e; text-decoration: none; font-weight: 600; }
+        .delete { color:#e53935; text-decoration:none; font-weight:bold; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>EverHaven</h1></div>
+    <div class="container">
+        <h2 style="margin-bottom:20px;">Amazon Monthly Subscription</h2>
+
+        <div class="card">
+            <strong>Total Subscription Paid:</strong>
+            <span style="color:#e53935; font-size:22px; font-weight:bold;">
+                £{{ "%.2f"|format(total_subscription) }}
+            </span>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:15px;">Add Monthly Charge</h3>
+            <form method="POST" action="/amazon-subscription">
+                <label>Date</label>
+                <input type="date" name="charge_date" required>
+                <label>Amount (£)</label>
+                <input type="number" step="0.01" name="amount" required>
+                <label>Notes (optional)</label>
+                <textarea name="notes" rows="2"></textarea>
+                <button type="submit">Add Charge</button>
+            </form>
+        </div>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+            {% for charge in charges %}
+            <tr>
+                <td>{{ charge.id }}</td>
+                <td>{{ charge.charge_date }}</td>
+                <td>£{{ "%.2f"|format(charge.amount) }}</td>
+                <td>{{ charge.notes or '-' }}</td>
+                <td>
+                    <a class="delete" href="/delete-subscription/{{ charge.id }}"
+                       onclick="return confirm('Delete this charge?')">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align:center;">No subscription charges yet</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="links">
+            <a href="/">← Home</a>
+            <a href="/sales">Sales History</a>
+        </div>
+    </div>
+</body>
+</html>
