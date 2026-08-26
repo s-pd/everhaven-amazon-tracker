@@ -86,16 +86,19 @@
                     <option value="">-- Choose Product --</option>
                     {% for product in products %}
                     <option value="{{ product.id }}">
-                        {{ product.product_name }} (Stock: {{ product.current_stock }})
+                        {{ product.product_name }} (Stock: {{ product.current_stock }}packs)
                     </option>
                     {% endfor %}
                 </select>
 
-                <label>Quantity Sold</label>
-                <input type="number" name="quantity_sold" min="1" required>
+                <label>Number of Packs Sold</label>
+<input type="number" name="quantity_sold" min="1" required>
 
-                <label>Sale Price per unit (£)</label>
-                <input type="number" step="0.01" name="sale_price" required>
+<label>Sale Price per Pack (£)</label>
+<input type="number" step="0.01" name="sale_price" required>
+<small style="display:block; margin-top:-12px; margin-bottom:18px; color:#666;">
+    Enter the full pack price. Example: if 2 chocolates sell as 1 pack for £5, enter 5.
+</small>
 
                 <label>Amazon Fees (£)</label>
                 <input type="number" step="0.01" name="amazon_fees" value="0">
