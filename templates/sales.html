@@ -80,12 +80,18 @@
             <h2>Sales History</h2>
             <a href="/record-sale" class="btn">+ Record Sale</a>
         </div>
-<div style="background: white; padding: 18px 25px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); display: inline-block;">
-    <strong>Total Net Profit:</strong> 
-    <span style="color: #2e7d32; font-size: 22px; font-weight: bold;">
-        £{{ "%.2f"|format(total_profit) }}
-    </span>
+
+<div style="background: white; padding: 18px 25px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+    <p><strong>Sales Profit:</strong> £{{ "%.2f"|format(sales_profit) }}</p>
+    <p><strong>Amazon Subscription:</strong> £{{ "%.2f"|format(subscription_total) }}</p>
+    <p style="margin-top:8px;">
+        <strong>Final Net Profit:</strong>
+        <span style="color: #2e7d32; font-size: 22px; font-weight: bold;">
+            £{{ "%.2f"|format(total_profit) }}
+        </span>
+    </p>
 </div>
+<a href="/amazon-subscription">Amazon Subscription</a>
 
         <table>
             <tr>

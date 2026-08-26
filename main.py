@@ -8,17 +8,17 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime
 import os
 import secrets
+import hashlib
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="everhaven-secret-key-change-this-later")
-
 templates = Jinja2Templates(directory="templates")
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
+RECOVERY_PIN = "2468"
 
-# Simple login credentials (we can improve later)
-USERNAME = "admin"
-PASSWORD = "everhaven123"   # Change this to a strong password later
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def get_current_user(request: Request):
     user = request.session.get("user")
@@ -59,6 +59,32 @@ def init_db():
             created_at TEXT
         )
     ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        )
+    ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS amazon_subscriptions (
+            id SERIAL PRIMARY KEY,
+            charge_date TEXT NOT NULL,
+            amount REAL NOT NULL,
+            notes TEXT,
+            created_at TEXT
+        )
+    ''')
+
+    cur.execute("SELECT * FROM users LIMIT 1")
+    existing_user = cur.fetchone()
+    if existing_user is None:
+        cur.execute(
+            "INSERT INTO users (username, password_hash) VALUES (%s, %s)",
+            ("admin", hash_password("everhaven123"))
+        )
 
     conn.commit()
     cur.close()
@@ -228,9 +254,15 @@ def sales_history(request: Request):
     ''')
     sales = cur.fetchall()
 
-    cur.execute("SELECT SUM(net_profit) as total FROM sales")
+        cur.execute("SELECT SUM(net_profit) as total FROM sales")
     total = cur.fetchone()
-    total_profit = total["total"] if total and total["total"] is not None else 0
+    sales_profit = total["total"] if total and total["total"] is not None else 0
+
+    cur.execute("SELECT SUM(amount) as total FROM amazon_subscriptions")
+    sub = cur.fetchone()
+    subscription_total = sub["total"] if sub and sub["total"] is not None else 0
+
+    total_profit = sales_profit - subscription_total
 
     cur.close()
     conn.close()
@@ -238,9 +270,11 @@ def sales_history(request: Request):
     return templates.TemplateResponse(
         request=request,
         name="sales.html",
-        context={
+               context={
             "sales": sales,
-            "total_profit": total_profit
+            "total_profit": total_profit,
+            "sales_profit": sales_profit,
+            "subscription_total": subscription_total
         }
     )
 
@@ -330,10 +364,17 @@ def login_page(request: Request):
 
 @app.post("/login")
 def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    if username == USERNAME and password == PASSWORD:
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if user and user["password_hash"] == hash_password(password):
         request.session["user"] = username
         return RedirectResponse(url="/", status_code=303)
-    
+
     return templates.TemplateResponse(
         request=request,
         name="login.html",
@@ -344,3 +385,171 @@ def login(request: Request, username: str = Form(...), password: str = Form(...)
 def logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/login", status_code=303)
+
+@app.get("/change-password")
+def change_password_page(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(
+        request=request,
+        name="change_password.html"
+    )
+
+@app.post("/change-password")
+def change_password(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    if new_password != confirm_password:
+        return templates.TemplateResponse(
+            request=request,
+            name="change_password.html",
+            context={"error": "New passwords do not match"}
+        )
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username = %s", (user,))
+    db_user = cur.fetchone()
+
+    if db_user["password_hash"] != hash_password(current_password):
+        cur.close()
+        conn.close()
+        return templates.TemplateResponse(
+            request=request,
+            name="change_password.html",
+            context={"error": "Current password is wrong"}
+        )
+
+    cur.execute(
+        "UPDATE users SET password_hash = %s WHERE username = %s",
+        (hash_password(new_password), user)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="change_password.html",
+        context={"success": "Password changed successfully"}
+    )
+
+@app.get("/forgot-password")
+def forgot_password_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="forgot_password.html"
+    )
+
+@app.post("/forgot-password")
+def forgot_password(
+    request: Request,
+    recovery_pin: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...)
+):
+    if recovery_pin != RECOVERY_PIN:
+        return templates.TemplateResponse(
+            request=request,
+            name="forgot_password.html",
+            context={"error": "Wrong recovery PIN"}
+        )
+
+    if new_password != confirm_password:
+        return templates.TemplateResponse(
+            request=request,
+            name="forgot_password.html",
+            context={"error": "New passwords do not match"}
+        )
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE users SET password_hash = %s WHERE username = %s",
+        (hash_password(new_password), "admin")
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="forgot_password.html",
+        context={"success": "Password reset successfully. You can now login."}
+    )
+
+@app.get("/amazon-subscription")
+def amazon_subscription_page(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM amazon_subscriptions ORDER BY id DESC")
+    charges = cur.fetchall()
+
+    cur.execute("SELECT SUM(amount) as total FROM amazon_subscriptions")
+    total = cur.fetchone()
+    total_subscription = total["total"] if total and total["total"] is not None else 0
+
+    cur.close()
+    conn.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="amazon_subscription.html",
+        context={
+            "charges": charges,
+            "total_subscription": total_subscription
+        }
+    )
+
+@app.post("/amazon-subscription")
+def add_amazon_subscription(
+    request: Request,
+    charge_date: str = Form(...),
+    amount: float = Form(...),
+    notes: str = Form("")
+):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        '''INSERT INTO amazon_subscriptions (charge_date, amount, notes, created_at)
+           VALUES (%s, %s, %s, %s)''',
+        (charge_date, amount, notes, created_at)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return RedirectResponse(url="/amazon-subscription", status_code=303)
+
+@app.get("/delete-subscription/{charge_id}")
+def delete_subscription(request: Request, charge_id: int):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM amazon_subscriptions WHERE id = %s", (charge_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return RedirectResponse(url="/amazon-subscription", status_code=303)
