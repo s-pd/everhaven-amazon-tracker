@@ -237,9 +237,9 @@ def sales_history(request: Request):
 
     conn = get_db_connection()
     cur = conn.cursor()
-    
+
     cur.execute('''
-        SELECT 
+        SELECT
             sales.id,
             products.product_name,
             sales.quantity_sold,
@@ -254,7 +254,7 @@ def sales_history(request: Request):
     ''')
     sales = cur.fetchall()
 
-        cur.execute("SELECT SUM(net_profit) as total FROM sales")
+    cur.execute("SELECT SUM(net_profit) as total FROM sales")
     total = cur.fetchone()
     sales_profit = total["total"] if total and total["total"] is not None else 0
 
@@ -266,11 +266,11 @@ def sales_history(request: Request):
 
     cur.close()
     conn.close()
-    
+
     return templates.TemplateResponse(
         request=request,
         name="sales.html",
-               context={
+        context={
             "sales": sales,
             "total_profit": total_profit,
             "sales_profit": sales_profit,
