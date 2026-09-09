@@ -11,11 +11,14 @@ import secrets
 import hashlib
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key="everhaven-secret-key-change-this-later")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.environ.get("SECRET_KEY", "dev-only-change-me")
+)
 templates = Jinja2Templates(directory="templates")
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
-RECOVERY_PIN = "2468"
+RECOVERY_PIN = os.environ.get("RECOVERY_PIN", "2468")
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
