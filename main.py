@@ -106,6 +106,16 @@ def home(request: Request):
         name="home.html"
     )
 
+@app.get("/about")
+def about(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(
+        request=request,
+        name="about.html",
+        context={}
+    )
 @app.get("/add-product")
 def add_product_form(request: Request):
     user = get_current_user(request)
