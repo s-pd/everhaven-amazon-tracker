@@ -9,6 +9,10 @@ from datetime import datetime
 import os
 import secrets
 import hashlib
+import csv
+import io
+
+from fastapi.responses import StreamingResponse
 
 app = FastAPI()
 app.add_middleware(
@@ -116,6 +120,59 @@ def about(request: Request):
         name="about.html",
         context={}
     )
+
+@app.get("/backup")
+def backup_page(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(
+        request=request,
+        name="backup.html",
+        context={}
+    )
+
+def _csv_response(rows, filename):
+    output = io.StringIO()
+    if rows:
+        fieldnames = list(rows[0].keys())
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(dict(row))
+    data = output.getvalue()
+    return StreamingResponse(
+        iter([data]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.get("/backup/products")
+def backup_products(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products ORDER BY id")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return _csv_response(rows, "everhaven_products.csv")
+
+@app.get("/backup/sales")
+def backup_sales(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM sales ORDER BY id")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return _csv_response(rows, "everhaven_sales.csv")
+
 @app.get("/add-product")
 def add_product_form(request: Request):
     user = get_current_user(request)

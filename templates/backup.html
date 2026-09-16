@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backup - EverHaven</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; color: #333; }
+        .header { background-color: #1a1a2e; color: white; padding: 25px 0; text-align: center; position: relative; }
+        .header h1 { font-size: 36px; }
+        .header p { margin-top: 8px; opacity: 0.85; }
+        .logout { position: absolute; top: 20px; right: 30px; color: #ff6b6b; text-decoration: none; font-weight: 600; }
+        .container { max-width: 640px; margin: 60px auto; padding: 0 20px; }
+        .panel { background: white; border-radius: 12px; padding: 40px 36px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .panel h2 { color: #1a1a2e; margin-bottom: 14px; }
+        .panel p { color: #555; margin-bottom: 22px; }
+        .btn { display: inline-block; background: #1a1a2e; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 8px; font-weight: 600; margin: 6px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/logout" class="logout">Logout</a>
+        <h1>EverHaven</h1>
+        <p>Amazon Profit Tracker</p>
+    </div>
+    <div class="container">
+        <div class="panel">
+            <h2>Backup</h2>
+            <p>Download your data as CSV files. Save them on your computer.</p>
+            <a class="btn" href="/backup/products">Download products</a>
+            <a class="btn" href="/backup/sales">Download sales</a>
+            <p style="margin-top:28px;"><a class="btn" href="/">Back to Home</a></p>
+        </div>
+    </div>
+</body>
+</html>
