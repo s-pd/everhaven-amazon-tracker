@@ -173,6 +173,19 @@ def backup_sales(request: Request):
     conn.close()
     return _csv_response(rows, "everhaven_sales.csv")
 
+@app.get("/backup/subscriptions")
+def backup_subscriptions(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM amazon_subscriptions ORDER BY id")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return _csv_response(rows, "everhaven_subscriptions.csv")
+
 @app.get("/add-product")
 def add_product_form(request: Request):
     user = get_current_user(request)
