@@ -27,41 +27,36 @@
             font-weight: 600;
         }
         .container {
-            max-width: 900px;
-            margin: 50px auto;
+            max-width: 640px;
+            margin: 60px auto;
             padding: 0 20px;
         }
-        .welcome {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .welcome h2 { color: #1a1a2e; margin-bottom: 10px; }
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-        }
-        .card {
+        .panel {
             background: white;
             border-radius: 12px;
-            padding: 30px 20px;
+            padding: 40px 36px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .panel h2 {
+            color: #1a1a2e;
+            margin-bottom: 14px;
+        }
+        .panel p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+        .home-btn {
+            display: inline-block;
+            background: #1a1a2e;
+            color: #fff;
             text-decoration: none;
-            color: inherit;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 600;
         }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        }
-        .card h3 { margin-bottom: 10px; color: #1a1a2e; }
-        .card p { font-size: 14px; color: #666; }
-        .add { border-top: 4px solid #4CAF50; }
-        .products { border-top: 4px solid #2196F3; }
-        .sale { border-top: 4px solid #FF9800; }
-        .history { border-top: 4px solid #9C27B0; }
-        .sub { border-top: 4px solid #e53935; }
-        .pass { border-top: 4px solid #607d8b; }
+        .home-btn:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -70,43 +65,11 @@
         <h1>EverHaven</h1>
         <p>Amazon Profit Tracker</p>
     </div>
-
-            <div class="welcome">
+    <div class="container">
+        <div class="panel">
             <h2>About</h2>
             <p>EverHaven is a stock and sales tracker for a small shop.</p>
-            <a href="/">Home</a>
-        </div>
-
-        <div class="cards">
-            <a href="/add-product" class="card add">
-                <h3>+ Add Product</h3>
-                <p>Add new products and stock</p>
-            </a>
-
-            <a href="/products" class="card products">
-                <h3>View Products</h3>
-                <p>See all products & stock levels</p>
-            </a>
-
-            <a href="/record-sale" class="card sale">
-                <h3>Record Sale</h3>
-                <p>Log a new Amazon sale</p>
-            </a>
-
-            <a href="/sales" class="card history">
-                <h3>Sales History</h3>
-                <p>View all past sales & profits</p>
-            </a>
-
-            <a href="/amazon-subscription" class="card sub">
-                <h3>Amazon Subscription</h3>
-                <p>Monthly Amazon charges</p>
-            </a>
-
-            <a href="/change-password" class="card pass">
-                <h3>Change Password</h3>
-                <p>Update your login password</p>
-            </a>
+            <a href="/" class="home-btn">Back to Home</a>
         </div>
     </div>
 </body>
