@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Paste sale - EverHaven</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; }
+        .header { background: #1a1a2e; color: white; padding: 20px; text-align: center; }
+        .container { max-width: 550px; margin: 40px auto; padding: 0 20px; }
+        .card { background: white; padding: 30px; border-radius: 12px; }
+        textarea { width: 100%; padding: 12px; margin: 12px 0 18px; min-height: 180px; }
+        button { width: 100%; padding: 14px; background: #4CAF50; color: white; border: none; border-radius: 6px; font-size: 16px; }
+        a { display: inline-block; margin-top: 16px; color: #1a1a2e; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>EverHaven</h1></div>
+    <div class="container">
+        <div class="card">
+            <h2>Paste Amazon note</h2>
+            <p>Paste the settlement line / email / your note. Check the form after.</p>
+            <form method="POST" action="/paste-sale">
+                <textarea name="pasted_text" required placeholder="e.g. Scooby Doo chocolate qty 2 £5.00 fee £1.20 2026-09-19"></textarea>
+                <button type="submit">Read and fill sale form</button>
+            </form>
+            <a href="/">Home</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -92,19 +92,24 @@
                 </select>
 
                 <label>Number of Packs Sold</label>
-<input type="number" name="quantity_sold" min="1" required>
+<input type="number" name="quantity_sold" min="1" required
+       value="{{ guess.quantity_sold if guess is defined else '' }}">
+
 
 <label>Sale Price per Pack (£)</label>
-<input type="number" step="0.01" name="sale_price" required>
+<input type="number" step="0.01" name="sale_price" required
+       value="{{ guess.sale_price if guess is defined else '' }}">
+
 <small style="display:block; margin-top:-12px; margin-bottom:18px; color:#666;">
     Enter the full pack price. Example: if 2 chocolates sell as 1 pack for £5, enter 5.
 </small>
 
                 <label>Amazon Fees (£)</label>
-                <input type="number" step="0.01" name="amazon_fees" value="0">
+                <input type="number" step="0.01" name="amazon_fees"
+       value="{{ guess.amazon_fees if guess is defined else 0 }}">
 
                 <label>Notes (optional)</label>
-                <textarea name="notes" rows="3"></textarea>
+                <textarea name="notes" rows="3">{{ guess.notes if guess is defined else '' }}</textarea>
 
                 <button type="submit">Record Sale</button>
             </form>

@@ -33,6 +33,54 @@ def get_current_user(request: Request):
         return None
     return user
 
+import re
+from datetime import datetime
+
+def extract_sale_from_text(text: str) -> dict:
+    """Guess sale fields from pasted Amazon / notes text. Wife must check."""
+    raw = text or ""
+    out = {
+        "quantity_sold": 1,
+        "sale_price": 0.0,
+        "amazon_fees": 0.0,
+        "sale_date": datetime.now().strftime("%Y-%m-%d"),
+        "notes": raw[:500],
+        "guess_name": "",
+    }
+
+    qty = re.search(r"(?:qty|quantity|units?|sold)\s*[:=]?\s*(\d+)", raw, re.I)
+    if qty:
+        out["quantity_sold"] = int(qty.group(1))
+
+    # last £ amount often the sale; "fee" / "commission" near a number = fees
+    fee = re.search(
+        r"(?:fee|fees|commission|fba)[^\d£]{0,20}£?\s*(\d+(?:\.\d{1,2})?)",
+        raw,
+        re.I,
+    )
+    if fee:
+        out["amazon_fees"] = float(fee.group(1))
+
+    money = re.findall(r"£\s*(\d+(?:\.\d{1,2})?)", raw)
+    if not money:
+        money = re.findall(r"(\d+\.\d{2})", raw)
+    if money:
+        amounts = [float(x) for x in money]
+        if out["amazon_fees"] and out["amazon_fees"] in amounts:
+            amounts = [a for a in amounts if a != out["amazon_fees"]]
+        if amounts:
+            out["sale_price"] = amounts[0]
+
+    date = re.search(r"(20\d{2}-\d{2}-\d{2})", raw)
+    if date:
+        out["sale_date"] = date.group(1)
+
+    # first line often the product name
+    first = raw.strip().splitlines()[0] if raw.strip() else ""
+    out["guess_name"] = first[:80]
+
+    return out
+
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
@@ -593,6 +641,41 @@ def amazon_subscription_page(request: Request):
         context={
             "charges": charges,
             "total_subscription": total_subscription
+        }
+    )
+
+@app.get("/paste-sale")
+def paste_sale_form(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse(
+        request=request,
+        name="paste_sale.html",
+        context={"error": None}
+    )
+
+@app.post("/paste-sale")
+def paste_sale_preview(request: Request, pasted_text: str = Form("")):
+    user = get_current_user(request)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    guess = extract_sale_from_text(pasted_text)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, product_name, current_stock FROM products ORDER BY product_name")
+    products = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="record_sale.html",
+        context={
+            "products": products,
+            "guess": guess,
         }
     )
 
